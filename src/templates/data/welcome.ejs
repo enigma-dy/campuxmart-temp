@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome Email</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background-color: #4a90e2;
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+      }
+      .content {
+        padding: 24px;
+        color: #333333;
+      }
+      .content h2 {
+        margin-top: 0;
+      }
+      .button {
+        display: inline-block;
+        margin-top: 24px;
+        padding: 12px 24px;
+        background-color: #4a90e2;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+      .footer {
+        text-align: center;
+        padding: 16px;
+        font-size: 12px;
+        color: #aaaaaa;
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Welcome to Campusmart</h1>
+      </div>
+      <div class="content">
+        <h2>Hello <%= name %>,</h2>
+        <p>
+          We’re thrilled to have you on board. You’ve joined a platform
+          dedicated to making your academic and campus life easier and more
+          connected.
+        </p>
+        <p>
+          Get started by exploring your dashboard, setting up your profile, or
+          connecting with fellow students.
+        </p>
+        <a href="https://campuxmart.com" class="button">Go to Dashboard</a>
+      </div>
+      <div class="footer">
+        © <%= new Date().getFullYear() %> Campusmart. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>
