@@ -8,7 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '../../guard/auth.guard';
 import { UserModule } from './user.module';
 import { ConfigService } from 'src/config/config.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule } from 'src/config/config.module';
 
 @Module({
   imports: [
