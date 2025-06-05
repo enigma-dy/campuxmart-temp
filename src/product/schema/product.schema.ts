@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, HydratedDocument, Model, Types } from 'mongoose';
 
 interface Variant {
   size?: string;
@@ -9,6 +9,7 @@ interface Variant {
   price: number;
   images?: string[];
   barcode?: string;
+  weight?: number;
 }
 
 export type ProductDocument = Product & Document;
@@ -34,6 +35,7 @@ export class Product {
         price: { type: Number, min: 0 },
         images: [String],
         barcode: String,
+        weight: { type: Number, min: 0 },
       },
     ],
     default: [],
@@ -102,13 +104,13 @@ export class Product {
   @Prop({ type: Date })
   releaseDate?: Date;
 
-  @Prop({ type: String, trim: true })
-  slug?: string;
+  @Prop({ type: String, trim: true, unique: true })
+  slug: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, trim: true })
   metaTitle?: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, trim: true })
   metaDescription?: string;
 
   @Prop({ type: Number, default: 0 })
@@ -116,6 +118,19 @@ export class Product {
 
   @Prop({ type: Number, default: 0 })
   viewCount: number;
+
+  @Prop({
+    type: String,
+    enum: ['physical', 'digital', 'service'],
+    default: 'physical',
+  })
+  productType: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }], default: [] })
+  relatedProducts: Types.ObjectId[];
+
+  @Prop({ type: Number, min: [0, 'Tax rate cannot be negative'] })
+  taxRate?: number;
 
   @Prop({
     type: Number,
@@ -141,12 +156,19 @@ ProductSchema.index({ vendorId: 1 });
 ProductSchema.index({ sku: 1 }, { unique: true });
 ProductSchema.index({ slug: 1 }, { unique: true });
 
-ProductSchema.pre('save', async function (next) {
+ProductSchema.pre<HydratedDocument<Product>>('save', async function (next) {
   if (!this.slug) {
     this.slug = this.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+
+    const model = this.constructor as Model<HydratedDocument<Product>>;
+    const existing = await model.findOne({ slug: this.slug });
+
+    if (existing && existing._id.toString() !== this._id.toString()) {
+      this.slug = `${this.slug}-${this.vendorId.toString().slice(-4)}`;
+    }
   }
 
   this.isAvailable =

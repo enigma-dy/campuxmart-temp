@@ -36,10 +36,9 @@ export class UserService {
     return this.userModel.find().select('-password').lean().exec();
   }
 
-  async findById(id: string): Promise<Omit<User, 'password'> | null> {
-    return this.userModel.findById(id).select('-password').lean().exec();
+  async findById(id: string): Promise<UserDocument | null> {
+    return this.userModel.findById(id).select('-password').exec();
   }
-
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
   }
