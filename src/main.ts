@@ -20,7 +20,7 @@ async function bootstrap() {
       'JWT',
     )
     .addTag('auth', 'Authentication endpoints')
-    .addTag('users', 'User management endpoints')
+
     .addTag('notifications', 'Notification sending endpoints')
     .addTag('templates', 'Template management endpoints')
     .build();
