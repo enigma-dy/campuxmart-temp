@@ -137,6 +137,8 @@ ProductSchema.index({
   slug: 'text',
 });
 
+ProductSchema.index({ vendorId: 1 });
+
 ProductSchema.pre('save', async function (next) {
   if (!this.slug) {
     this.slug = this.name
