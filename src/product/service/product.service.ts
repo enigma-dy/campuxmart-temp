@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -21,33 +22,64 @@ export class ProductService {
   ) {}
 
   async create(dto: CreateProductDto, userId: string): Promise<Product> {
-    const user = await this.userService.findById(userId);
-    if (!user || !user.isVendor()) {
-      throw new ForbiddenException('Only vendors can create products');
+    try {
+      const user = await this.userService.findById(userId);
+      if (!user) {
+        throw new ForbiddenException('User not found');
+      }
+
+      const allowedRoles = ['admin', 'superAdmin', 'vendor'];
+      if (!allowedRoles.includes(user.role)) {
+        throw new ForbiddenException(
+          'Only admins, super admins, and vendors can create products',
+        );
+      }
+
+      const skuSet = new Set();
+      for (const variant of dto.variations || []) {
+        if (
+          !variant.sku ||
+          typeof variant.sku !== 'string' ||
+          !variant.sku.trim()
+        ) {
+          throw new BadRequestException('Each variant must have a valid SKU.');
+        }
+        if (skuSet.has(variant.sku)) {
+          throw new BadRequestException(
+            `Duplicate SKU detected: ${variant.sku}`,
+          );
+        }
+        skuSet.add(variant.sku);
+      }
+
+      if (dto.offers) {
+        dto.offers = dto.offers.map((offer) => ({
+          ...offer,
+          startDate: offer.startDate ? new Date(offer.startDate) : undefined,
+          endDate: offer.endDate ? new Date(offer.endDate) : undefined,
+        }));
+      }
+
+      const productData = {
+        ...dto,
+        vendorId: new Types.ObjectId(userId),
+        reviews: [],
+        averageRating: 0,
+        totalReviews: 0,
+      };
+
+      const product = await this.productModel.create(productData);
+
+      // Optional email notification
+      // await this.notificationService.sendEmail(...);
+
+      return product;
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw new InternalServerErrorException(
+        error?.message || 'Something went wrong while creating the product',
+      );
     }
-
-    const productData = {
-      ...dto,
-      vendorId: new Types.ObjectId(userId),
-      reviews: [],
-      averageRating: 0,
-      totalReviews: 0,
-    };
-
-    const product = await this.productModel.create(productData);
-
-    // Notify admin of new product
-    await this.notificationService.sendEmail(
-      process.env.ADMIN_EMAIL || 'admin@example.com',
-      'new-product',
-      {
-        subject: 'New Product Created',
-        productName: product.name,
-        vendorName: `${user.firstName} ${user.lastName}`,
-      },
-    );
-
-    return product;
   }
 
   async findAll(): Promise<Product[]> {
@@ -145,5 +177,105 @@ export class ProductService {
         { averageRating: 0, totalReviews: 0 },
       );
     }
+  }
+
+  async createOffer(productId: string, offer: any): Promise<any> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+    if (!product.offers) {
+      throw new NotFoundException(`Product has no offers`);
+    }
+
+    product.offers.push(offer);
+    await product.save();
+    return product;
+  }
+
+  async updateOffer(
+    productId: string,
+    offerId: string,
+    offer: any,
+  ): Promise<any> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+    if (!product.offers) {
+      throw new NotFoundException(`Product has no offers`);
+    }
+    const index = product.offers.findIndex(
+      (o) => o._id?.toString() === offerId,
+    );
+    if (index === -1) {
+      throw new NotFoundException(`Offer with ID ${offerId} not found`);
+    }
+    product.offers[index] = offer;
+    await product.save();
+    return product;
+  }
+
+  async deleteOffer(productId: string, offerId: string): Promise<void> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+    if (!product.offers || product.offers.length === 0) {
+      throw new NotFoundException(`Product has no offers`);
+    }
+    const index = product.offers.findIndex(
+      (o) => o._id?.toString() === offerId,
+    );
+    if (index === -1) {
+      throw new NotFoundException(`Offer with ID ${offerId} not found`);
+    }
+    product.offers.splice(index, 1);
+    await product.save();
+  }
+
+  async createVariation(productId: string, variation: any): Promise<any> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+    product.variations.push(variation);
+    await product.save();
+    return product;
+  }
+
+  async updateVariation(
+    productId: string,
+    variationId: string,
+    variation: any,
+  ): Promise<any> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+    const index = product.variations.findIndex(
+      (v) => v._id?.toString() === variationId,
+    );
+    if (index === -1) {
+      throw new NotFoundException(`Variation with ID ${variationId} not found`);
+    }
+    product.variations[index] = variation;
+    await product.save();
+    return product;
+  }
+
+  async deleteVariation(productId: string, variationId: string): Promise<void> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+    const index = product.variations.findIndex(
+      (v) => v._id?.toString() === variationId,
+    );
+    if (index === -1) {
+      throw new NotFoundException(`Variation with ID ${variationId} not found`);
+    }
+    product.variations.splice(index, 1);
+    await product.save();
   }
 }

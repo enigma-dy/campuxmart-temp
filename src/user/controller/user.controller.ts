@@ -12,7 +12,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { UserService } from '../service/user.service';
-import { CreateUserDto, UpdateUserDto } from '../dto/user.dto';
+
 import { Public } from '../../decorators/public.decorator';
 import { Request } from 'express';
 import { AuthRequest } from '../dto/auth-request.dto';
@@ -21,7 +21,9 @@ import {
   ApiBearerAuth,
   ApiResponse,
   ApiOperation,
+  ApiBody,
 } from '@nestjs/swagger';
+import { RegisterDto, UpdateUserDto } from '../dto/user.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -35,8 +37,8 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 409, description: 'Email already taken' })
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async create(@Body() registerDto: RegisterDto) {
+    return this.userService.create(registerDto);
   }
 
   @Get()
@@ -69,7 +71,8 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async update(@Req() req: AuthRequest, @Body() updateUserDto: UpdateUserDto) {
-    const userId = req.user.id;
+    const userId = req.user.sub;
+    console.log(userId);
     return this.userService.update(userId, updateUserDto);
   }
 
@@ -91,11 +94,22 @@ export class UserController {
   @ApiResponse({ status: 204, description: 'Password changed successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiBody({
+    description: 'New password',
+    examples: {
+      newPassword: {
+        summary: 'New password example',
+        value: {
+          newPassword: 'newpassword123',
+        },
+      },
+    },
+  })
   async changePassword(
     @Req() req: AuthRequest,
     @Body('newPassword') newPassword: string,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.sub;
     await this.userService.changePassword(userId, newPassword);
   }
 }

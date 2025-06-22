@@ -13,13 +13,13 @@ import {
   UserRole,
 } from '../schema/user.schema';
 import * as argon2 from 'argon2';
-import { CreateUserDto, UpdateUserDto } from '../dto/user.dto';
+import { RegisterDto, UpdateUserDto } from '../dto/user.dto';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async create(dto: CreateUserDto) {
+  async create(dto: RegisterDto) {
     try {
       const existing = await this.userModel.findOne({ email: dto.email });
       if (existing) throw new ConflictException('Email taken');
@@ -28,7 +28,14 @@ export class UserService {
       const { password, ...rest } = user.toObject();
       return rest;
     } catch (error) {
-      throw new InternalServerErrorException('User creation failed');
+      if (error instanceof ConflictException) {
+        throw error;
+      } else if (error instanceof Error) {
+        console.error(error);
+        throw new InternalServerErrorException('User creation failed');
+      } else {
+        throw new InternalServerErrorException('User creation failed');
+      }
     }
   }
 
@@ -39,6 +46,7 @@ export class UserService {
   async findById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id).select('-password').exec();
   }
+
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
   }

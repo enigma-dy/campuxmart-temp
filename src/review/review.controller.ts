@@ -6,6 +6,7 @@ import {
   Query,
   HttpStatus,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { Review } from './review.schema';
@@ -36,16 +37,16 @@ export class ReviewController {
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Failed to create review' })
-  create(@Body() reviewData: CreateReviewDto, @Req() req: AuthRequest) {
-    return this.reviewService.create({
-      ...reviewData,
-      userId: new Types.ObjectId(req.user.id),
-      productId: new Types.ObjectId(reviewData.productId),
-      storeId: new Types.ObjectId(reviewData.storeId),
-      email: req.user.email!,
-    });
+  async create(
+    @Req() req: AuthRequest,
+    @Body() reviewData: CreateReviewDto,
+  ): Promise<{ message: string }> {
+    const userId = req.user.sub;
+    if (!userId) {
+      throw new BadRequestException('User ID not found in request');
+    }
+    return this.reviewService.create(userId, reviewData);
   }
-
   @Get()
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Get all reviews' })

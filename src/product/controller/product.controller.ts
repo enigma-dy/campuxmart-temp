@@ -28,7 +28,11 @@ export class ProductController {
     @Body() createProductDto: CreateProductDto,
     @Req() req: AuthRequest,
   ) {
-    return this.productService.create(createProductDto, req.user.id);
+    const userId = createProductDto.vendorId
+      ? createProductDto.vendorId
+      : req.user.sub;
+    console.log(userId);
+    return this.productService.create(createProductDto, userId);
   }
 
   @Public()

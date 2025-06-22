@@ -17,13 +17,13 @@ export class AuthService {
     if (!user || !(await user.comparePassword(data.password))) {
       throw new UnauthorizedException();
     }
-    const { password, ...result } = user;
+    const { password, ...result } = user.toObject();
 
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
-      permission: user.permission,
+      permission: user.permissions,
     };
 
     const token = await this.jwtService.signAsync(payload);

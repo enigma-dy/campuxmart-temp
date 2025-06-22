@@ -1,134 +1,154 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  IsBoolean,
-  IsOptional,
-} from 'class-validator';
-import { UserPermission, UserRole } from '../schema/user.schema';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsEmail } from 'class-validator';
 
-export class CreateUserDto {
-  @ApiProperty({
-    example: 'John',
-    description: 'User first name',
-  })
+export class UserDto {
+  @ApiProperty({ example: 'John Doe' })
   @IsString()
-  firstName: string;
+  fullname: string;
 
-  @ApiProperty({
-    example: 'Doe',
-    description: 'User last name',
-  })
+  @ApiProperty({ example: 'Doe' })
   @IsString()
   lastName: string;
 
-  @ApiProperty({
-    example: 'user@example.com',
-    description: 'User email (must be valid)',
-  })
-  @IsEmail()
+  @ApiProperty({ example: 'john.doe@example.com' })
+  @IsString()
   email: string;
 
-  @ApiProperty({
-    example: 'SecurePassword123!',
-    description: 'User password (min 8 chars)',
-    minLength: 8,
-  })
+  @ApiProperty({ example: 'password123' })
   @IsString()
   password: string;
-}
 
-export class UpdateUserDto {
-  @ApiPropertyOptional({
-    example: 'John',
-    description: 'Updated first name (optional)',
-  })
+  @ApiProperty({ example: 'Bio of John Doe', required: false })
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  firstName?: string;
+  bio?: string;
 
-  @ApiPropertyOptional({
-    example: 'Doe',
-    description: 'Updated last name (optional)',
-  })
+  @ApiProperty({ example: 'Business Name', required: false })
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  lastName?: string;
+  businessName?: string;
 
-  @ApiPropertyOptional({
-    example: 'new.email@example.com',
-    description: 'Updated email (optional)',
-  })
+  @ApiProperty({ example: 'Business Category', required: false })
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  email?: string;
+  businessCategory?: string;
 
-  @ApiPropertyOptional({
-    example: 'NewSecurePassword456!',
-    description: 'Updated password (optional)',
-  })
+  @ApiProperty({ example: 'Business Location', required: false })
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  password?: string;
+  businessLocation?: string;
 
-  @ApiPropertyOptional({
-    enum: UserRole,
-    example: UserRole.ADMIN,
-    description: 'Updated user role (optional)',
-  })
+  @ApiProperty({ example: '+1234567890', required: false })
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  role?: UserRole;
+  phoneNumber?: string;
 
-  @ApiPropertyOptional({
-    type: [UserPermission],
-    enum: UserPermission,
-    enumName: 'UserPermission',
-    example: [UserPermission.MANAGE_PRODUCTS, UserPermission.VIEW_ANALYTICS],
-    description:
-      'Updated user permissions (optional). Available permissions: manage_users, manage_vendors, manage_products, manage_orders, manage_settings, view_analytics, regular',
-  })
+  @ApiProperty({ example: 'https://example.com/image.jpg', required: false })
   @IsOptional()
-  permissions?: UserPermission[];
-
-  @ApiPropertyOptional({
-    example: true,
-    description: 'Activation status (optional)',
-  })
-  @IsBoolean()
-  @IsOptional()
-  isActive?: boolean;
-
-  @ApiPropertyOptional({
-    example: 'My Awesome Store',
-    description: 'Updated store name (optional)',
-  })
   @IsString()
-  @IsOptional()
-  storename?: string;
+  img?: string;
 
-  @ApiPropertyOptional({
-    example: 'A store selling tech gadgets',
-    description: 'Updated store description (optional)',
-  })
-  @IsString()
+  @ApiProperty({ example: 'tore-name', required: false })
   @IsOptional()
+  @IsString()
+  storeName?: string;
+
+  @ApiProperty({ example: 'Store description', required: false })
+  @IsOptional()
+  @IsString()
   storeDescription?: string;
 }
 
-export class LoginDto {
-  @ApiProperty({
-    example: 'user@example.com',
-    description: 'Registered email address',
-  })
+export class UpdateUserDto {
+  @ApiProperty({ example: 'John Doe', required: false })
+  @IsOptional()
+  @IsString()
+  fullname?: string;
+
+  @ApiProperty({ example: 'Doe', required: false })
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @ApiProperty({ example: 'john.doe@example.com', required: false })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @ApiProperty({ example: 'password123', required: false })
+  @IsOptional()
+  @IsString()
+  password?: string;
+
+  @ApiProperty({ example: 'Bio of John Doe', required: false })
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @ApiProperty({ example: 'Business Name', required: false })
+  @IsOptional()
+  @IsString()
+  businessName?: string;
+
+  @ApiProperty({ example: 'Business Category', required: false })
+  @IsOptional()
+  @IsString()
+  businessCategory?: string;
+
+  @ApiProperty({ example: 'Business Location', required: false })
+  @IsOptional()
+  @IsString()
+  businessLocation?: string;
+
+  @ApiProperty({ example: '+1234567890', required: false })
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
+  @ApiProperty({ example: 'https://example.com/image.jpg', required: false })
+  @IsOptional()
+  @IsString()
+  img?: string;
+
+  @ApiProperty({ example: 'tore-name', required: false })
+  @IsOptional()
+  @IsString()
+  storeName?: string;
+
+  @ApiProperty({ example: 'Store description', required: false })
+  @IsOptional()
+  @IsString()
+  storeDescription?: string;
+}
+
+export class RegisterDto {
+  @ApiProperty({ example: 'John Doe' })
+  @IsString()
+  fullname: string;
+
+  @ApiProperty({ example: 'Doe' })
+  @IsString()
+  lastName: string;
+
+  @ApiProperty({ example: 'john.doe@example.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({
-    example: 'yourPassword123',
-    description: 'Account password',
-  })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'password123' })
+  @IsString()
+  password: string;
+
+  @ApiProperty({ example: '+1234567890' })
+  @IsString()
+  phoneNumber: string;
+}
+
+export class LoginDto {
+  @ApiProperty({ example: 'john.doe@example.com' })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: 'password123' })
+  @IsString()
   password: string;
 }

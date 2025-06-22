@@ -4,21 +4,20 @@ import * as argon2 from 'argon2';
 
 export enum UserRole {
   ADMIN = 'admin',
-  VENDOR = 'vendor',
+  VENDOR = 'endor',
   CUSTOMER = 'customer',
-  SUPER_ADMIN = 'super_admin',
+  SUPER_ADMIN = 'uper_admin',
 }
 
 export enum UserPermission {
-  MANAGE_USERS = 'manage_users',
-  MANAGE_VENDORS = 'manage_vendors',
-  MANAGE_PRODUCTS = 'manage_products',
-  MANAGE_ORDERS = 'manage_orders',
-  MANAGE_SETTINGS = 'manage_settings',
+  MANAGE_USERS = 'anage_users',
+  MANAGE_VENDORS = 'anage_vendors',
+  MANAGE_PRODUCTS = 'anage_products',
+  MANAGE_ORDERS = 'anage_orders',
+  MANAGE_SETTINGS = 'anage_settings',
   VIEW_ANALYTICS = 'view_analytics',
-  REGULAR = 'regular',
+  REGULAR = 'egular',
 }
-
 
 export interface UserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -28,13 +27,12 @@ export interface UserMethods {
   isVendor(): boolean;
 }
 
-
 export type UserDocument = User & Document & UserMethods;
 
 @Schema({ timestamps: true })
 export class User {
   @Prop({ required: true })
-  firstName: string;
+  fullname: string;
 
   @Prop({ required: true })
   lastName: string;
@@ -45,6 +43,33 @@ export class User {
   @Prop({ required: true })
   password: string;
 
+  @Prop()
+  bio?: string;
+
+  @Prop()
+  businessName?: string;
+
+  @Prop()
+  businessCategory?: string;
+
+  @Prop()
+  businessLocation?: string;
+
+  @Prop({ default: false })
+  verified: boolean;
+
+  @Prop()
+  otp?: string;
+
+  @Prop()
+  otpExpiry?: string;
+
+  @Prop()
+  img?: string;
+
+  @Prop()
+  phoneNumber?: string;
+
   @Prop({ type: String, enum: UserRole, default: UserRole.CUSTOMER })
   role: UserRole;
 
@@ -53,7 +78,7 @@ export class User {
     enum: UserPermission,
     default: [UserPermission.REGULAR],
   })
-  permission: UserPermission[];
+  permissions: UserPermission[];
 
   @Prop({ default: true })
   isActive: boolean;
@@ -62,7 +87,7 @@ export class User {
   lastLogin?: Date;
 
   @Prop()
-  storename?: string;
+  storeName?: string;
 
   @Prop()
   storeDescription?: string;
@@ -70,13 +95,11 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-
 UserSchema.pre<UserDocument>('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await argon2.hash(this.password);
   next();
 });
-
 
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string,
@@ -87,7 +110,7 @@ UserSchema.methods.comparePassword = async function (
 UserSchema.methods.hasPermission = function (
   permission: UserPermission,
 ): boolean {
-  return this.permission.includes(permission);
+  return this.permissions.includes(permission);
 };
 
 UserSchema.methods.isSuperAdmin = function (): boolean {
