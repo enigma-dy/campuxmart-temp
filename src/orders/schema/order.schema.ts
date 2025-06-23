@@ -4,6 +4,7 @@ import { Document, Types } from 'mongoose';
 export interface OrderItem {
   product_id: Types.ObjectId;
   product_title: string;
+  product_sku: string;
   quantity: number;
   price: number;
   total_price: number;
@@ -69,6 +70,12 @@ export class Order {
     required: true,
   })
   order_items: OrderItem[];
+
+  @Prop()
+  transaction_reference?: string;
+
+  @Prop()
+  payment_reference?: string;
 
   @Prop({ type: String })
   order_notes?: string;

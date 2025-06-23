@@ -10,12 +10,20 @@ export class OrderService {
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(createOrderDto: CreateOrderDto): Promise<OrderDocument> {
     const order = new this.orderModel({
       ...createOrderDto,
       order_status: createOrderDto.order_status || OrderStatus.PENDING,
     });
     return await order.save();
+  }
+
+  async update(id: string, data: Partial<Order>): Promise<Order> {
+    const order = await this.orderModel.findByIdAndUpdate(id, data, {
+      new: true,
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    return order;
   }
 
   async findAll(): Promise<Order[]> {
